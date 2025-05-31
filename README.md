@@ -1,0 +1,1 @@
+# bugbounty-disclosed-reports
